@@ -19,7 +19,7 @@ enum CameraError: ErrorType {
 public protocol CameraDelegate : NSObjectProtocol{
     func dealWithImage(image image: CIImage) -> Void
     
-    func faceBound(rects rects: [CGRect]) -> Void
+    func faceDetect(rects rects: [CGRect]) -> Void
 }
 
 class Camera : NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureMetadataOutputObjectsDelegate{
@@ -194,7 +194,7 @@ class Camera : NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCapture
             rects.append(faceObj.bounds)
         }
         
-        delegate.faceBound(rects: rects)
+        delegate.faceDetect(rects: rects)
     }
     
 }

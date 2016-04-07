@@ -30,7 +30,7 @@ class FilterViewController : UIViewController{
         imageView.snp_makeConstraints(closure: { (make) -> Void in
             make.width.height.equalTo(self.view)
         })
-        let gesture = UITapGestureRecognizer(target: self, action: Selector("imageViewTouch:"))
+        let gesture = UITapGestureRecognizer(target: self, action: #selector(imageViewTouch))
         imageView.addGestureRecognizer(gesture)
         imageView.userInteractionEnabled = true
         
@@ -50,7 +50,7 @@ class FilterViewController : UIViewController{
             make.left.equalTo(10)
             make.centerY.equalTo(cancelBtn.superview!)
         })
-        cancelBtn.addTarget(self, action: "cancelBtnClicked", forControlEvents: .TouchUpInside)
+        cancelBtn.addTarget(self, action: #selector(cancelBtnClicked), forControlEvents: .TouchUpInside)
         
         let saveBtn = UIButton.init(type: .System)
         saveBtn.setTitle("save", forState: .Normal)
@@ -59,7 +59,7 @@ class FilterViewController : UIViewController{
             make.centerY.equalTo(saveBtn.superview!)
             make.right.equalTo(-10)
         })
-        saveBtn.addTarget(self, action: "saveBtnClicked", forControlEvents: .TouchUpInside)
+        saveBtn.addTarget(self, action: #selector(saveBtnClicked), forControlEvents: .TouchUpInside)
         
         //设备底部工具栏
         bottomView = UIView()
@@ -73,7 +73,7 @@ class FilterViewController : UIViewController{
         
         let filterBtn = UIButton.init(type: .System)
         filterBtn.setTitle("filter", forState: .Normal)
-        filterBtn.addTarget(self, action: "filterBtnClicked", forControlEvents: .TouchUpInside)
+        filterBtn.addTarget(self, action: #selector(filterBtnClicked), forControlEvents: .TouchUpInside)
         bottomView.addSubview(filterBtn)
         filterBtn.snp_makeConstraints(closure: { (make) -> Void in
             make.left.equalTo(10)
@@ -96,7 +96,7 @@ class FilterViewController : UIViewController{
     }
     
     func filterBtnClicked() -> Void {
-        print(__FUNCTION__)
+        print(#function)
         let ciImg = Filter.filterImage(filterName: "CIPhotoEffectNoir", image: CIImage(image: orignalImg)!)
         
         self.imageView.image = UIImage.init(CIImage: ciImg!)
@@ -104,7 +104,7 @@ class FilterViewController : UIViewController{
     }
     
     func imageViewTouch(sender: UITapGestureRecognizer) -> Void {
-        print(__FUNCTION__)
+        print(#function)
         
         self.bottomView.hidden = !self.bottomView.hidden
         self.topView.hidden = !self.topView.hidden

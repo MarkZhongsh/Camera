@@ -79,7 +79,7 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
             make.centerY.equalTo(changeBtn.superview!)
             make.right.equalTo(-5)
         })
-        changeBtn.addTarget(self, action: "changeBtnClicked", forControlEvents: .TouchUpInside)
+        changeBtn.addTarget(self, action: #selector(changeBtnClicked), forControlEvents: .TouchUpInside)
         //顶部栏初始化 -- end
     }
     
@@ -101,12 +101,12 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
             make.centerY.equalTo(captureBtn.superview!)
             //make.bottom.equalTo(-5)
         })
-        captureBtn.addTarget(self, action: "captureBtnClicked", forControlEvents: .TouchUpInside)
+        captureBtn.addTarget(self, action: #selector(captureBtnClicked), forControlEvents: .TouchUpInside)
         
         bottomView.addSubview(filterBtn)
         filterBtn.setTitle("filters", forState: .Normal)
         filterBtn.setTitleColor(UIColor.blueColor(), forState: .Normal)
-        filterBtn.addTarget(self, action: "showFilterContainter", forControlEvents: .TouchUpInside)
+        filterBtn.addTarget(self, action: #selector(showFilterContainter), forControlEvents: .TouchUpInside)
         filterBtn.snp_makeConstraints(closure: { (make) -> Void in
             make.centerY.equalTo(filterBtn.superview!)
             make.left.equalTo(5)
@@ -151,7 +151,7 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
         
         let hideBtn = UIButton(type: .System)
         hideBtn.setTitle("hide", forState: .Normal)
-        hideBtn.addTarget(self, action: Selector("hideFilterContainter"), forControlEvents: .TouchUpInside)
+        hideBtn.addTarget(self, action: #selector(hideFilterContainter), forControlEvents: .TouchUpInside)
         filterContainter.addSubview(hideBtn)
         hideBtn.snp_makeConstraints(closure: { (make) -> Void in
             //make.top.equalTo(self.filterColView)
@@ -175,7 +175,7 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
         btn.setTitle(filters[indexPath.row], forState: .Normal)
         //btn.setTitleColor(UIColor.blueColor(), forState: .Normal)
         btn.bounds = cell.contentView.bounds
-        btn.addTarget(self, action: Selector("filterBtnClicked:"), forControlEvents: .TouchUpInside)
+        btn.addTarget(self, action: #selector(filterBtnClicked), forControlEvents: .TouchUpInside)
         cell.contentView.addSubview(btn)
         btn.snp_makeConstraints(closure: { (make) -> Void in
             make.centerX.centerY.equalTo(btn.superview!)
@@ -210,7 +210,7 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
     
     //MARK: - 按钮业务
     func changeBtnClicked() -> Void {
-        print(__FUNCTION__)
+        print(#function)
         
         let queue = dispatch_queue_create("shutterCamera", nil)
         dispatch_async(queue, { () -> Void in
@@ -226,13 +226,13 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
         
         previewLayer.addAnimation(scaleAnimation, forKey: nil)
         
-        times++
+        times+=1
         //previewLayer.transform = CATransform3DMakeRotation(CGFloat(M_PI), 0, 1, 0)
         //previewLayer.setAffineTransform(CGAffineTransformMakeRotation(CGFloat(M_PI / 2.0)))
     }
     
     func captureBtnClicked() -> Void {
-        print(__FUNCTION__)
+        print(#function)
         camera.stopCapture()
         let cgImg = previewLayer.contents as! CGImage
         var ciImg = CIImage(CGImage: cgImg)
@@ -248,7 +248,7 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
     }
     
     func filterBtnClicked(sender: AnyObject) -> Void {
-        print(__FUNCTION__)
+        print(#function)
         let filterBtn = sender as! UIButton
         
         currentFilterName = (filterBtn.titleLabel?.text)!
@@ -256,7 +256,7 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
     
     //展现滤镜列表
     func showFilterContainter() -> Void {
-        print(__FUNCTION__)
+        print(#function)
         //UIView.animateWithDuration(<#T##duration: NSTimeInterval##NSTimeInterval#>, animations: <#T##() -> Void#>)
         
 //        let animation = CABasicAnimation(keyPath: "translation.y")
@@ -298,58 +298,47 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
     }
     
     //MARK: - Camera代理
-    func dealWithImage(var image image: CIImage) {
-        //previewLayer.contents = image
-        
-        //print(CIImage(CGImage: image).extent)
-        //print(self.mainView.bounds)
-        //CGAffineTransformIdentity
-        
-        //let faceFeatures = Filter.faceFilter(image)
-        var localFaceViews: [UIView] = []
-        let oriRect = image.extent
-//
-//        for feature in faceFeatures! {
-//            let faceView = UIView(frame: feature.bounds)
-//            let heightScale = feature.bounds.height / oriRect.height
-//            let widthScale = feature.bounds.width / oriRect.width
-//            let boundsRect = CGRectMake(feature.bounds.origin.x, feature.bounds.origin.y, feature.bounds.width*widthScale, feature.bounds.height*heightScale)
-//            faceView.bounds = boundsRect
-//            faceView.layer.borderColor = UIColor.blueColor().CGColor
-//            faceView.layer.borderWidth = 2
-//            localFaceViews.append(faceView)
-//            //self.mainView.addSubview(faceView)
-//            //faceViews.append(faceView)
-//        }
-//        
+    func dealWithImage(image image: CIImage) {
         var cgImage: CGImage? = nil
+        var filterImg: CIImage! = image
         if !self.currentFilterName.isEmpty && self.currentFilterName != "none" {
-            image = Filter.filterImage(filterName: self.currentFilterName, image: image)!
+            filterImg = Filter.filterImage(filterName: self.currentFilterName, image: image)!
         }
 
-        cgImage = Filter.ciImage2cgImage(image: image)
+        cgImage = Filter.ciImage2cgImage(image: filterImg)
         
         dispatch_sync(dispatch_get_main_queue(), {
             [unowned self ] in
             
             self.previewLayer.contents = nil
             self.previewLayer.contents = cgImage
-            
-//            for view in self.faceViews {
-//                view.removeFromSuperview()
-//            }
-//            
-//            for view in localFaceViews {
-//                self.mainView.addSubview(view)
-//                self.faceViews.append(view)
-//            }
-            
+
         })
     }
     
-    func faceBound(rects rects: [CGRect]) {
+    func faceDetect(rects rects: [CGRect]) {
+        var newFaceViews: [UIView] = []
+        
         for rect in rects {
-            print(rect)
+            let faceView = UIView(frame: rect)
+            faceView.layer.borderWidth = 2
+            faceView.layer.borderColor = UIColor.blueColor().CGColor
+            newFaceViews.append(faceView)
         }
+        
+        dispatch_async(dispatch_get_main_queue(), { [unowned self] () -> Void  in
+            
+            for view in self.faceViews {
+                view.removeFromSuperview()
+            }
+            
+            self.faceViews.removeAll()
+            
+            for view in newFaceViews {
+                self.mainView.addSubview(view)
+                self.faceViews.append(view)
+                print(view.bounds)
+            }
+        })
     }
 }
