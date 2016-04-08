@@ -320,8 +320,8 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
         var newFaceViews: [UIView] = []
         
         for rect in rects {
-            let screenHeight = UIScreen.mainScreen().bounds.height
-            let screenWidth = UIScreen.mainScreen().bounds.width
+            let screenHeight = self.previewLayer.bounds.height
+            let screenWidth = self.previewLayer.bounds.width
             let newRect = CGRectMake( screenWidth*rect.origin.y, screenHeight*rect.origin.x, screenWidth*rect.width, screenWidth*rect.height)
             
             let faceView = UIView(frame: newRect)
