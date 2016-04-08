@@ -320,7 +320,11 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
         var newFaceViews: [UIView] = []
         
         for rect in rects {
-            let faceView = UIView(frame: rect)
+            let screenHeight = UIScreen.mainScreen().bounds.height
+            let screenWidth = UIScreen.mainScreen().bounds.width
+            let newRect = CGRectMake( screenWidth*rect.origin.y, screenHeight*rect.origin.x, screenWidth*rect.width, screenWidth*rect.height)
+            
+            let faceView = UIView(frame: newRect)
             faceView.layer.borderWidth = 2
             faceView.layer.borderColor = UIColor.blueColor().CGColor
             newFaceViews.append(faceView)
@@ -337,7 +341,7 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
             for view in newFaceViews {
                 self.mainView.addSubview(view)
                 self.faceViews.append(view)
-                print(view.bounds)
+                //print(view.bounds)
             }
         })
     }

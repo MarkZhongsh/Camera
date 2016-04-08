@@ -181,16 +181,6 @@ class Camera : NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCapture
             }
             
             let faceObj = obj as! AVMetadataFaceObject
-            if faceObj.hasRollAngle {
-                print("roll angle:")
-                print(faceObj.rollAngle)
-            }
-            
-            if faceObj.hasYawAngle {
-                print("yaw angle")
-                print(faceObj.yawAngle)
-            }
-            //print(faceObj.bounds)
             rects.append(faceObj.bounds)
         }
         
