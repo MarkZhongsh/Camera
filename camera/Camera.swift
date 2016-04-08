@@ -155,14 +155,7 @@ class Camera : NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCapture
         if delegate != nil {
             let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
         
-            var outputImg = CIImage(CVPixelBuffer: imageBuffer!)
-//            if deviceInput.device.position == AVCaptureDevicePosition.Back {
-//                outputImg = outputImg.imageByApplyingOrientation(6)
-//            }else if(deviceInput.device.position == AVCaptureDevicePosition.Front) {
-//                outputImg = outputImg.imageByApplyingOrientation(5)
-//            }
-            //let cgImg = context.createCGImage(outputImg, fromRect: outputImg.extent)
-            
+            let outputImg = CIImage(CVPixelBuffer: imageBuffer!)
             delegate.dealWithImage(image: outputImg)
         }
     }
