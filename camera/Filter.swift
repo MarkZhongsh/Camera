@@ -69,4 +69,95 @@ class Filter: NSObject {
         return outputImg
     }
     
+    static func facePixellate(image image: CIImage, faceRects: [CGRect], height: CGFloat, width: CGFloat, reverse: Bool) -> CIImage? {
+        
+        if faceRects.count <= 0 {
+            return nil
+        }
+        
+        let filter = CIFilter(name: "CIPixellate")
+        print(filter)
+        
+        let imgHeight = image.extent.width
+        let imgWidth = image.extent.height
+        
+        filter?.setValue(image, forKey: kCIInputImageKey)
+        filter?.setValue(20.0, forKey: kCIInputScaleKey)
+        filter?.setValue(CIVector(x: imgWidth, y:imgHeight), forKey: kCIInputCenterKey)
+        let pixellatedImg = filter?.outputImage
+        
+        var maskImg: CIImage!
+        
+        for rect in faceRects {
+            print("-------rect")
+            print(rect)
+            print("-------rect")
+            //let centerX = rect.origin.x*imgWidth+rect.width*imgWidth*0.5000
+            //let centerY = rect.origin.y*imgHeight+rect.height*imgHeight*0.5000
+            let centerX = rect.origin.y*imgHeight+rect.height*imgHeight*0.5
+            var centerY = rect.origin.x*imgWidth+rect.width*imgWidth*0.5
+            if reverse
+            {
+                centerY = imgWidth-centerY
+            }
+//            let centerX = rect.origin.y*imgWidth+rect.height*imgWidth*0.5
+//            let centerY = rect.origin.x*imgHeight+rect.width*imgHeight*0.5
+//            let centerX = (width-rect.origin.x-rect.width)*0.5
+//            let centerY = (height-rect.origin.y-rect.height)*0.5
+            print("--------centerx")
+            print(centerX)
+            print("--------centerx")
+            
+            print("--------centery")
+            print(centerY)
+            print("--------centery")
+            
+            let radius = min(rect.width*imgWidth*0.5,rect.height*imgHeight*0.5)
+            print("---radius:")
+            print(radius)
+            print("-----")
+            
+            let radialGradient = CIFilter(name: "CIRadialGradient", withInputParameters: [
+                "inputRadius0":radius,
+                "inputRadius1":radius+1,
+                "inputColor0":CIColor(red: 0, green: 1, blue: 0, alpha: 1),
+                "inputColor1":CIColor(red: 0, green: 0, blue: 0, alpha: 0),
+                kCIInputCenterKey : CIVector(x: centerX, y: centerY)
+                ])
+            let ciV = CIVector(x: centerX, y: centerY)
+            print(ciV.CGRectValue)
+            print(ciV.CGPointValue)
+            //print(radialGradient?.attributes)
+
+            
+            let radialGradientOutputImg = radialGradient?.outputImage?.imageByCroppingToRect(image.extent)
+            //radialGradientOutputImg = radialGradientOutputImg?.imageByApplyingTransform(CGAffineTransformMakeScale(1, -1))
+
+            print("-------image")
+            print(image.extent)
+            print("-------image")
+            
+            print("-------outputImg")
+            print((radialGradientOutputImg?.extent)!)
+            print("-------outputImg")
+            
+            if maskImg == nil {
+                maskImg = radialGradientOutputImg
+            }
+            else{
+                maskImg = CIFilter(name: "CISourceOverCompositing", withInputParameters: [
+                    kCIInputImageKey:radialGradientOutputImg!,
+                    kCIInputBackgroundImageKey:maskImg
+                    ])?.outputImage
+            }
+        }
+        
+        let blendFilter = CIFilter(name: "CIBlendWithMask")
+        blendFilter?.setValue(pixellatedImg, forKey: kCIInputImageKey)
+        blendFilter?.setValue(image, forKey: kCIInputBackgroundImageKey)
+        blendFilter?.setValue(maskImg, forKey: kCIInputMaskImageKey)
+        
+        return blendFilter?.outputImage
+    }
+    
 }

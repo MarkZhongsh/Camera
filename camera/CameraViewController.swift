@@ -36,6 +36,8 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
     
     var times = 0
     
+    var faceRects: [CGRect]!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -54,6 +56,7 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
         addFilterCollection()
         
         faceViews = []
+        faceRects = []
         
         camera = Camera()
         camera.delegate = self
@@ -192,8 +195,6 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
         if previewLayer == nil {
             let layer = mainView.layer
             previewLayer = CALayer()
-            //previewLayer.backgroundColor = UIColor.blueColor().CGColor
-            //previewLayer.bounds = layer.bounds
             let bounds = CGRectMake(layer.bounds.origin.y, layer.bounds.origin.x, layer.bounds.height, layer.bounds.width)
             previewLayer.bounds = bounds
             previewLayer.position = CGPointMake(CGRectGetMidX(layer.bounds), CGRectGetMidY(layer.bounds))
@@ -227,8 +228,6 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
         previewLayer.addAnimation(scaleAnimation, forKey: nil)
         
         times+=1
-        //previewLayer.transform = CATransform3DMakeRotation(CGFloat(M_PI), 0, 1, 0)
-        //previewLayer.setAffineTransform(CGAffineTransformMakeRotation(CGFloat(M_PI / 2.0)))
     }
     
     func captureBtnClicked() -> Void {
@@ -257,37 +256,13 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
     //展现滤镜列表
     func showFilterContainter() -> Void {
         print(#function)
-        //UIView.animateWithDuration(<#T##duration: NSTimeInterval##NSTimeInterval#>, animations: <#T##() -> Void#>)
-        
-//        let animation = CABasicAnimation(keyPath: "translation.y")
-//        animation.fromValue = filterContainter.bounds.height
-//        animation.toValue = 0
-//        animation.autoreverses = false
-//        animation.fillMode = kCAFillModeForwards
-//        animation.duration = 1.0
-//        filterContainter.layer.addAnimation(animation, forKey: nil)
-//        filterContainter.snp_remakeConstraints(closure: { (make) -> Void in
-//            make.bottom.equalTo(0)
-//        })
-//        filterContainter.updateConstraints()
-//        filterContainter.updateConstraintsIfNeeded()
-//        UIView.setAnimationDuration(1)
-        var height = filterContainter.bounds.height
-        //filterContainter.snp_bottom = 0
-        //filterContainter.snp_makeConstraints(closure: <#T##(make: ConstraintMaker) -> Void#>)
-//        filterContainter.snp_makeConstraints(closure: { (make) -> Void in
-//            make.bottom.equalTo(filterContainter.superview!)
-//        })
+        //var height = filterContainter.bounds.height
+
         UIView.animateWithDuration(20.0, animations: { () -> Void in
             self.filterContainter.snp_updateConstraints(closure: { (make) -> Void in
                 make.bottom.equalTo(0)
-                //make.bottom.equalTo(self.filterContainter.superview!)
-                //make.width.height.equalTo(self.filterContainter.superview!)
             })
         })
-//        self.filterContainter.snp_remakeConstraints(closure: { (make) -> Void in
-//            make.bottom.equalTo(self.filterColView.superview!.bounds.height)
-//        })
     }
     
     //隐藏滤镜列表
@@ -304,6 +279,21 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
         if !self.currentFilterName.isEmpty && self.currentFilterName != "none" {
             filterImg = Filter.filterImage(filterName: self.currentFilterName, image: image)!
         }
+        
+        
+        if self.previewLayer == nil {
+            return
+        }
+        
+        let height = self.previewLayer.bounds.height
+        let width = self.previewLayer.bounds.width
+        
+        
+        let pixellatedImg = Filter.facePixellate(image: filterImg, faceRects: self.faceRects, height: width, width: height, reverse: true)
+        if pixellatedImg != nil {
+            filterImg = pixellatedImg
+        }
+        
 
         cgImage = Filter.ciImage2cgImage(image: filterImg)
         
@@ -317,18 +307,27 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
     }
     
     func faceDetect(rects rects: [CGRect]) {
+        //self.faceRect = rects
+        
         var newFaceViews: [UIView] = []
+        
+        self.faceRects.removeAll()
         
         for rect in rects {
             let screenHeight = self.previewLayer.bounds.height
             let screenWidth = self.previewLayer.bounds.width
-            let newRect = CGRectMake( screenWidth*rect.origin.y, screenHeight*rect.origin.x, screenWidth*rect.width, screenWidth*rect.height)
+            let newRect = CGRectMake(screenHeight*rect.origin.y, screenWidth*rect.origin.x, screenHeight*rect.height, screenWidth*rect.width)
+            
+            self.faceRects.append(CGRectMake(rect.origin.y, rect.origin.x, rect.height, rect.width))
             
             let faceView = UIView(frame: newRect)
+            //self.faceRects.append(faceView.bounds)
             faceView.layer.borderWidth = 2
             faceView.layer.borderColor = UIColor.blueColor().CGColor
             newFaceViews.append(faceView)
         }
+        
+        //self.faceRects = newFaceViews
         
         dispatch_async(dispatch_get_main_queue(), { [unowned self] () -> Void  in
             
