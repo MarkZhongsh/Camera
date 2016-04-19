@@ -289,7 +289,7 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
         let width = self.previewLayer.bounds.width
         
         
-        let pixellatedImg = Filter.facePixellate(image: filterImg, faceRects: self.faceRects, height: width, width: height, reverse: true)
+        let pixellatedImg = Filter.facePixellate(image: filterImg, faceRects: self.faceRects, height: width, width: height, reverseX: false, reverseY: true)
         if pixellatedImg != nil {
             filterImg = pixellatedImg
         }
@@ -318,7 +318,8 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
             let screenWidth = self.previewLayer.bounds.width
             let newRect = CGRectMake(screenHeight*rect.origin.y, screenWidth*rect.origin.x, screenHeight*rect.height, screenWidth*rect.width)
             
-            self.faceRects.append(CGRectMake(rect.origin.y, rect.origin.x, rect.height, rect.width))
+            //self.faceRects.append(CGRectMake(rect.origin.y, rect.origin.x, rect.height, rect.width))
+            self.faceRects.append(rect)
             
             let faceView = UIView(frame: newRect)
             //self.faceRects.append(faceView.bounds)

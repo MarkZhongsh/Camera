@@ -69,7 +69,7 @@ class Filter: NSObject {
         return outputImg
     }
     
-    static func facePixellate(image image: CIImage, faceRects: [CGRect], height: CGFloat, width: CGFloat, reverse: Bool) -> CIImage? {
+    static func facePixellate(image image: CIImage, faceRects: [CGRect], height: CGFloat, width: CGFloat, reverseX: Bool, reverseY: Bool) -> CIImage? {
         
         if faceRects.count <= 0 {
             return nil
@@ -78,8 +78,11 @@ class Filter: NSObject {
         let filter = CIFilter(name: "CIPixellate")
         print(filter)
         
-        let imgHeight = image.extent.width
-        let imgWidth = image.extent.height
+        //let imgHeight = image.extent.width
+        //let imgWidth = image.extent.height
+        
+        let imgWidth = image.extent.width
+        let imgHeight = image.extent.height
         
         filter?.setValue(image, forKey: kCIInputImageKey)
         filter?.setValue(20.0, forKey: kCIInputScaleKey)
@@ -92,13 +95,18 @@ class Filter: NSObject {
             print("-------rect")
             print(rect)
             print("-------rect")
-            //let centerX = rect.origin.x*imgWidth+rect.width*imgWidth*0.5000
-            //let centerY = rect.origin.y*imgHeight+rect.height*imgHeight*0.5000
-            let centerX = rect.origin.y*imgHeight+rect.height*imgHeight*0.5
-            var centerY = rect.origin.x*imgWidth+rect.width*imgWidth*0.5
-            if reverse
+            var centerX = rect.origin.x*imgWidth+rect.width*imgWidth*0.5000
+            var centerY = rect.origin.y*imgHeight+rect.height*imgHeight*0.5000
+            //let centerX = rect.origin.y*imgHeight+rect.height*imgHeight*0.5
+            //var centerY = rect.origin.x*imgWidth+rect.width*imgWidth*0.5
+            if reverseX
             {
-                centerY = imgWidth-centerY
+                centerX = imgWidth-centerX
+            }
+            
+            if reverseY
+            {
+                centerY = imgHeight-centerY
             }
 //            let centerX = rect.origin.y*imgWidth+rect.height*imgWidth*0.5
 //            let centerY = rect.origin.x*imgHeight+rect.width*imgHeight*0.5
