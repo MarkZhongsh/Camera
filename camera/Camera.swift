@@ -149,6 +149,10 @@ class Camera : NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, AVCapture
         return nil
     }
     
+    func getDevicePosition() -> AVCaptureDevicePosition {
+        return self.deviceInput.device.position
+    }
+    
     //MARK: - AVCapture代理
     func captureOutput(captureOutput: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, fromConnection connection: AVCaptureConnection!) {
         

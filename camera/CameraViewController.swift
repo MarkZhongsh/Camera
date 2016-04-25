@@ -120,13 +120,10 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
     private func addFilterCollection() -> Void {
         filterContainter = UIView()
         mainView.addSubview(filterContainter)
-        //filterContainter.backgroundColor = UIColor.whiteColor()
-        //mainView.insertSubview(filterContainter, belowSubview: topView)
-        //filterContainter.backgroundColor = UIColor.blueColor()
+
         filterContainter.translatesAutoresizingMaskIntoConstraints = false
         filterContainter.snp_makeConstraints(closure: { (make) -> Void in
             make.height.width.equalTo(filterContainter.superview!)
-//            make.bottom.equalTo(0)
             make.bottom.equalTo(UIScreen.mainScreen().bounds.height)
         })
         
@@ -135,8 +132,7 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
         flowLayout.sectionInset = UIEdgeInsetsMake(1, 0, 1, 0)
         flowLayout.minimumInteritemSpacing = 2
         flowLayout.itemSize = CGSizeMake(200, 40)
-        //filterColView = UICollectionView(frame: CGRectMake(0, 0, 2000, 50), collectionViewLayout: flowLayout)
-//        filterColView = UICollectionView()
+
         filterColView = UICollectionView(frame: CGRectMake(0, 0, 0, 0), collectionViewLayout: flowLayout)
         //filterColView.setCollectionViewLayout(flowLayout, animated: true)
         filterColView.backgroundColor = UIColor.whiteColor()
@@ -280,16 +276,11 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
             filterImg = Filter.filterImage(filterName: self.currentFilterName, image: image)!
         }
         
-        
         if self.previewLayer == nil {
             return
         }
         
-        let height = self.previewLayer.bounds.height
-        let width = self.previewLayer.bounds.width
-        
-        
-        let pixellatedImg = Filter.facePixellate(image: filterImg, faceRects: self.faceRects, height: width, width: height, reverseX: false, reverseY: true)
+        let pixellatedImg = Filter.facePixellate(image: filterImg, faceRects: self.faceRects)
         if pixellatedImg != nil {
             filterImg = pixellatedImg
         }
@@ -299,6 +290,13 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
         
         dispatch_sync(dispatch_get_main_queue(), {
             [unowned self ] in
+            
+            for view in self.faceViews {
+                view.removeFromSuperview()
+            }
+            self.faceRects.removeAll()
+            
+            self.faceViews.removeAll()
             
             self.previewLayer.contents = nil
             self.previewLayer.contents = cgImage
@@ -316,19 +314,26 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
         for rect in rects {
             let screenHeight = self.previewLayer.bounds.height
             let screenWidth = self.previewLayer.bounds.width
-            let newRect = CGRectMake(screenHeight*rect.origin.y, screenWidth*rect.origin.x, screenHeight*rect.height, screenWidth*rect.width)
+            //不知为何,avcapture中检测的人面与实际生成出来的CImage的位置以Y轴对称坐标反转,所以在此手动翻转回来
+            let transformRect = CGRectMake(rect.origin.x, 1-rect.origin.y-rect.height, rect.width, rect.height)
+            var newRect: CGRect;
+            if self.camera.getDevicePosition() == AVCaptureDevicePosition.Front {
+                //翻转rect
+                let faceTransform = CGRectMake(transformRect.origin.x, 1-transformRect.origin.y-transformRect.height, transformRect.width, transformRect.height)
+                newRect = CGRectMake(screenHeight*faceTransform.origin.y, screenWidth*faceTransform.origin.x, screenHeight*faceTransform.height, screenWidth*faceTransform.width)
+            }
+            else {
+                newRect = CGRectMake(screenHeight*transformRect.origin.y, screenWidth*transformRect.origin.x, screenHeight*transformRect.height, screenWidth*transformRect.width)
+            }
             
-            //self.faceRects.append(CGRectMake(rect.origin.y, rect.origin.x, rect.height, rect.width))
-            self.faceRects.append(rect)
+            self.faceRects.append(transformRect)
             
             let faceView = UIView(frame: newRect)
-            //self.faceRects.append(faceView.bounds)
             faceView.layer.borderWidth = 2
             faceView.layer.borderColor = UIColor.blueColor().CGColor
             newFaceViews.append(faceView)
+            //self.previewLayer.addSublayer(faceView.layer)
         }
-        
-        //self.faceRects = newFaceViews
         
         dispatch_async(dispatch_get_main_queue(), { [unowned self] () -> Void  in
             
@@ -341,7 +346,6 @@ class CameraViewController: UIViewController, CameraDelegate,UICollectionViewDat
             for view in newFaceViews {
                 self.mainView.addSubview(view)
                 self.faceViews.append(view)
-                //print(view.bounds)
             }
         })
     }
